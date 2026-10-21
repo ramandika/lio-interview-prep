@@ -1,0 +1,25 @@
+services:
+  app:
+    build: ./backend
+    container_name: lio-app
+    ports:
+      - "8020:8000"
+    volumes:
+      - ./samples:/data/samples
+      - uploads:/data/uploads
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - SAMPLES_DIR=/data/samples
+      - UPLOADS_DIR=/data/uploads
+      # tier 4 (LLM rescue) is off unless explicitly armed: LLM_TIER=on plus
+      # an Anthropic-compatible endpoint (/v1/messages). Corpus sweeps stay
+      # offline and comparable unless LLM_TIER=on is passed to the container.
+      - LLM_TIER=${LLM_TIER:-off}
+      - LLM_API_KEY=${LLM_API_KEY:-}
+      - LLM_BASE_URL=${LLM_BASE_URL:-http://host.docker.internal:11444}
+      - LLM_MODEL=${LLM_MODEL:-claude-haiku-4-5}
+    restart: unless-stopped
+
+volumes:
+  uploads:

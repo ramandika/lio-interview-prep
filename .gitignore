@@ -1,0 +1,10 @@
+# Regenerable by backend/scripts/generate_samples.py (SAMPLES_DIR defaults to /data/samples)
+samples/generated-invoices/
+
+# Caches and build artifacts
+__pycache__/
+*.pyc
+.venv/
+venv/
+node_modules/
+.env
