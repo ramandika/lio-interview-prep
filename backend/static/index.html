@@ -4,54 +4,84 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Purchase Request Tool</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
 <script>
   // apply saved (or system) theme before first paint to avoid a flash
   (function () {
-    var t = 'dark';
+    var t = 'light';
     try {
       t = localStorage.getItem('theme') ||
-          (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+          (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
     } catch (e) {}
     document.documentElement.dataset.theme = t;
   })();
 </script>
 <style>
+  /* palette extracted from qontak.com (designlang, 2026-10-21): brand #0854d4,
+     ink #081833, sky tints #eaf2ff/#f5f9ff, line-blue hairline #d4e4ff;
+     dark theme maps the same hues onto the brand-dark navy #062a5e family */
   :root {
-    --bg: #0f1115; --surface: #171a21; --border: #262b36; --text: #e8eaed;
-    --muted: #9aa3b2; --accent: #4f7cff; --chip: #212631;
-    --hover: #1d2230; --pdf-bg: #10131a;
+    --bg: #0a1226; --surface: #101b38; --border: #24365f; --card-border: #24365f;
+    --text: #e7edfa; --text-strong: #f5f8ff;
+    --muted: #93a3c4; --accent: #4d8dff; --accent-deep: #3a7bf0;
+    --primary-border: rgba(77, 141, 255, .8); --link: #7dbeff;
+    --chip: #182647; --hover: #182647; --pdf-bg: #0c1531; --line: #24365f;
     --ok-bg: #173327; --ok-fg: #5fd39b;
     --warn-bg: #33230f; --warn-fg: #e2b25f;
     --bad-bg: #3a1717; --bad-fg: #ef9a9a;
-    --conf-high: #2e9e6b; --conf-mid: #c98a2d; --conf-low: #cf5b5b;
+    --conf-high: #34d399; --conf-mid: #f0bc60; --conf-low: #f08a8a;
   }
   :root[data-theme="light"] {
-    --bg: #f5f6f8; --surface: #ffffff; --border: #dfe3ea; --text: #1c2027;
-    --muted: #6b7480; --accent: #3b62d9; --chip: #edf0f5;
-    --hover: #e9edf5; --pdf-bg: #e8eaee;
+    /* qontak.com token set (designlang job 5607d846): page sky #f5f9ff,
+       control borders neutral #dcdfe4, card hairlines blue #d4e4ff,
+       body ink #2b2a35, headings #081833, muted #626b79, link #0b48b3 */
+    --bg: #f5f9ff; --surface: #ffffff; --border: #dcdfe4; --card-border: #d4e4ff;
+    --text: #2b2a35; --text-strong: #081833;
+    --muted: #626b79; --accent: #0854d4; --accent-deep: #0b48b3;
+    --primary-border: #4b61dd; --link: #0b48b3;
+    --chip: #eaf2ff; --hover: #eaf2ff; --pdf-bg: #eef3fa; --line: #dcdfe4;
     --ok-bg: #dcf5e6; --ok-fg: #1a7f4b;
     --warn-bg: #fdf0d4; --warn-fg: #8f6311;
     --bad-bg: #fbe0e0; --bad-fg: #ad4040;
     --conf-high: #1a7f4b; --conf-mid: #8f6311; --conf-low: #ab3c3c;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: system-ui, sans-serif; background: var(--bg);
-         color: var(--text); min-height: 100vh; }
+  body { font-family: "Inter", system-ui, Arial, sans-serif; background: var(--bg);
+         color: var(--text); min-height: 100vh; -webkit-font-smoothing: antialiased; }
+  /* qontak.com header: white surface floating on a shadow, not a hairline */
   header { display: flex; align-items: center; justify-content: space-between;
-           padding: 10px 20px; border-bottom: 1px solid var(--border);
-           position: sticky; top: 0; background: var(--bg); z-index: 5; }
-  header h1 { font-size: 15px; font-weight: 600; }
+           padding: 12px 20px; border-bottom: 1px solid var(--border);
+           position: sticky; top: 0; background: var(--surface); z-index: 5;
+           box-shadow: 0 10px 15px -3px rgba(8, 24, 51, .06); }
+  header h1 { display: flex; align-items: center; gap: 9px; font-size: 15px;
+              font-weight: 700; letter-spacing: -0.01em; }
+  .logoMark { width: 26px; height: 26px; border-radius: 7px; flex: none;
+              display: grid; place-items: center;
+              background: linear-gradient(135deg, #0854d4 0%, #009bde 100%); }
+  .logoMark svg { width: 15px; height: 15px; }
   .userbox { display: flex; gap: 8px; align-items: center; font-size: 13px; }
-  button { font: inherit; cursor: pointer; border: 1px solid var(--border);
-           background: var(--surface); color: var(--text); padding: 7px 14px;
-           border-radius: 8px; font-size: 13px; }
-  button.primary { background: var(--accent); border-color: var(--accent);
-                   color: #fff; font-weight: 600; }
+  /* qontak buttons (cluster a): 7px 20px, radius 6, primary carries a
+     #4b61dd border, secondary is white with a neutral #dcdfe4 border */
+  button { font: 500 13px/1 "Inter", system-ui, sans-serif; cursor: pointer;
+           border: 1px solid var(--border); background: var(--surface);
+           color: var(--text); padding: 7px 16px; border-radius: 6px; }
+  button.primary { background: var(--accent); border-color: var(--primary-border);
+                   color: #fff; font-weight: 600;
+                   transition: background-color .15s ease, box-shadow .15s ease; }
+  button.primary:hover:not(:disabled) { background: var(--accent-deep);
+                   box-shadow: 0 8px 16px -6px rgba(8, 84, 212, .45); }
+  button:not(.primary):hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   button:disabled { background: var(--surface); border-color: var(--border);
                     color: var(--muted); cursor: not-allowed; opacity: .6; }
   main { margin: 0 auto; padding: 20px 20px; }
-  .card { background: var(--surface); border: 1px solid var(--border);
-          border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+  /* qontak cards: blue hairline + the site's layered soft elevation (sh3) */
+  .card { background: var(--surface); border: 1px solid var(--card-border);
+          border-radius: 12px; padding: 16px; margin-bottom: 16px;
+          box-shadow: 0 6px 13px rgba(8, 24, 51, .05), 0 23px 23px rgba(8, 24, 51, .04),
+                      0 51px 31px rgba(8, 24, 51, .03), 0 92px 37px rgba(8, 24, 51, .01); }
   .grid { display: grid; grid-template-columns: minmax(300px, 0.9fr) minmax(0, 1.15fr) minmax(0, 1fr);
           gap: 16px; align-items: start; }
   @media (max-width: 1100px) { .grid { grid-template-columns: 1fr 1fr; } }
@@ -78,15 +108,19 @@
             background: rgba(255, 213, 74, .28); border-radius: 3px;
             pointer-events: none; }
   #pdfEmpty { padding: 30px 6px; text-align: center; }
-  h2 { font-size: 12px; color: var(--muted); font-weight: 600;
-       text-transform: uppercase; letter-spacing: .06em; margin-bottom: 10px; }
+  h2 { font-size: 12px; color: var(--accent); font-weight: 600;
+       text-transform: uppercase; letter-spacing: .12em; margin-bottom: 10px; }
   label { font-size: 12px; color: var(--muted); display: block; margin: 8px 0 3px; }
   input, select { font: inherit; font-size: 13px; width: 100%;
-                  background: var(--chip); color: var(--text);
-                  border: 1px solid var(--border); border-radius: 8px; padding: 7px 10px; }
+                  background: var(--surface); color: var(--text);
+                  border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; }
+  input:focus, select:focus { outline: 2px solid var(--accent); outline-offset: 1px;
+                              border-color: var(--accent); }
   .muted { color: var(--muted); font-size: 12px; }
-  .status { display: inline-block; padding: 2px 9px; border-radius: 999px;
-            font-size: 11px; font-weight: 600; background: var(--chip); }
+  /* qontak badge: white, 12px/600, radius 999 — tinted states override the bg */
+  .status { display: inline-block; padding: 4px 10px; border-radius: 999px;
+            font-size: 11px; font-weight: 600;
+            background: var(--surface); border: 1px solid var(--line); }
   .status.approved { background: var(--ok-bg); color: var(--ok-fg); }
   .status.pending_approval, .status.submitted { background: var(--warn-bg); color: var(--warn-fg); }
   .status.rejected { background: var(--bad-bg); color: var(--bad-fg); }
@@ -97,8 +131,8 @@
   table { width: 100%; border-collapse: collapse; font-size: 12px; }
   th { color: var(--muted); font-weight: 500; text-align: center; font-size: 11px;
        text-transform: uppercase; padding: 6px 8px;
-       border-bottom: 1px solid var(--border); }
-  td { padding: 4px 6px; border-bottom: 1px solid var(--border); text-align: center;
+       border-bottom: 1px solid var(--line); }
+  td { padding: 4px 6px; border-bottom: 1px solid var(--line); text-align: center;
        word-break: break-word; }
   /* keep tables inside their card: wrapper scrolls, long text ellipsises */
   .tw { overflow-x: auto; }
@@ -152,7 +186,7 @@
 </head>
 <body>
 <header>
-  <h1>🧾 Purchase Request Tool</h1>
+  <h1><span class="logoMark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v5h5"/><path d="M6 3h8l5 5v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z"/><path d="M8 13h8M8 17h5"/></svg></span>Purchase Request Tool</h1>
   <div style="display:flex; gap:8px; align-items:center">
     <button id="themeBtn" onclick="toggleTheme()" title="Switch light/dark"
             style="padding:5px 10px"></button>

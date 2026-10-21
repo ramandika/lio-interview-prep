@@ -1,0 +1,669 @@
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Qontak Design Study</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+
+<!--
+  Design plan — extracted from qontak.com via designlang (2026-10-21)
+  Color: brand #0854d4, accent-deep #0b48b3, cyan #009bde, ink #081833,
+  muted #4c5460, sky #eaf2ff, line #d4e4ff/#dcdfe4, paper warm #fbfbfd
+  Type: Inter — display 52/700, h1 40/700, h2 32/700, h3 20/600, body 16/24
+  Layout: single-look light marketing page; 1120px container; 12px cards
+  with blue hairlines; deep-blue gradient bands for contrast sections.
+-->
+<style>
+  :root {
+    color-scheme: light;
+    --brand: #0854d4;
+    --brand-deep: #0b48b3;
+    --brand-dark: #062a5e;
+    --brand-ink: #081833;
+    --cyan: #009bde;
+    --ink: #2b2a35;
+    --muted: #4c5460;
+    --muted-2: #626b79;
+    --line: #dcdfe4;
+    --line-blue: #d4e4ff;
+    --sky: #eaf2ff;
+    --sky-soft: #f5f9ff;
+    --paper: #ffffff;
+    --paper-warm: #fbfbfd;
+    --wa: #25d366;
+    --radius-control: 6px;
+    --radius-card: 12px;
+    --radius-hero: 24px;
+    --shadow-card: 0 24px 48px -12px rgba(8, 24, 51, .10), 0 6px 13px rgba(8, 24, 51, .05);
+    --shadow-pop: 0 32px 64px -16px rgba(8, 24, 51, .16), 0 8px 18px rgba(8, 24, 51, .07);
+    --pad-x: max(16px, env(safe-area-inset-left, 0px));
+    --pad-x-r: max(16px, env(safe-area-inset-right, 0px));
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 0 var(--pad-x-r) 0 var(--pad-x);
+    background: var(--paper);
+    color: var(--brand-ink);
+    font-family: "Inter", Arial, sans-serif;
+    font-size: 16px;
+    line-height: 24px;
+    -webkit-font-smoothing: antialiased;
+  }
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0 0 auto;
+    height: env(safe-area-inset-top, 0px);
+    z-index: 10;
+    background: var(--paper);
+  }
+  img, svg { max-width: 100%; }
+  h1, h2, h3 { text-wrap: balance; margin: 0; }
+  p { margin: 0; }
+  a { color: inherit; text-decoration: none; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+  :focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; border-radius: 2px; }
+
+  /* ---------- type roles ---------- */
+  .display { font-size: clamp(32px, 6vw, 52px); font-weight: 700; line-height: 1.08; letter-spacing: -0.02em; }
+  .h1 { font-size: clamp(28px, 5vw, 40px); font-weight: 700; line-height: 1.2; letter-spacing: -0.015em; }
+  .h2 { font-size: clamp(24px, 4vw, 32px); font-weight: 700; line-height: 1.25; }
+  .h3 { font-size: 20px; font-weight: 600; line-height: 28px; }
+  .body { font-size: 16px; line-height: 24px; }
+  .micro { font-size: 14px; line-height: 20px; }
+  .tiny { font-size: 12px; line-height: 16px; }
+  .eyebrow { font-size: 12px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--brand); }
+
+  /* ---------- buttons ---------- */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    font: 600 16px/1 "Inter", Arial, sans-serif;
+    padding: 13px 20px; border-radius: var(--radius-control);
+    border: 1px solid transparent; cursor: pointer; white-space: nowrap;
+    transition: background-color .15s ease, box-shadow .15s ease;
+  }
+  .btn-primary { background: var(--brand); color: #fff; }
+  .btn-primary:hover { background: var(--brand-deep); box-shadow: 0 8px 16px -6px rgba(8, 84, 212, .45); }
+  .btn-secondary { background: var(--paper); color: var(--brand); border-color: var(--line-blue); }
+  .btn-secondary:hover { border-color: var(--brand); background: var(--sky-soft); }
+  .btn-ghost-light { background: transparent; color: #fff; border-color: rgba(255, 255, 255, .45); }
+  .btn-ghost-light:hover { background: rgba(255, 255, 255, .12); }
+  .btn-link { display: inline-flex; align-items: center; gap: 6px; color: var(--brand); font-weight: 600; font-size: 15px; }
+  .btn-link:hover { color: var(--brand-deep); }
+
+  .pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--paper); color: var(--brand-ink);
+    border: 1px solid var(--line-blue); border-radius: 999px;
+    padding: 6px 14px; font-size: 12px; font-weight: 600;
+  }
+  .pill__dot { width: 8px; height: 8px; border-radius: 50%; background: var(--cyan); }
+
+  /* ---------- header ---------- */
+  .topline { background: var(--brand-dark); color: rgba(255, 255, 255, .85); }
+  .topline .wrap { display: flex; justify-content: flex-end; gap: 24px; padding-block: 8px; }
+  .topline a:hover { color: #fff; }
+  header.site {
+    position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+    background: var(--paper);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, .06), 0 4px 6px -2px rgba(0, 0, 0, .03);
+  }
+  .nav { display: flex; align-items: center; gap: 28px; padding-block: 14px; }
+  .wordmark { font-size: 21px; letter-spacing: -0.02em; line-height: 1; }
+  .wordmark b { font-weight: 700; color: var(--brand-ink); }
+  .wordmark span { font-weight: 400; color: var(--brand); }
+  .nav-links { display: flex; gap: 24px; margin-left: 8px; }
+  .nav-links a { font-size: 15px; font-weight: 500; color: var(--brand-ink); padding: 8px 0; }
+  .nav-links a:hover { color: var(--brand); }
+  .nav-cta { margin-left: auto; display: flex; gap: 10px; align-items: center; }
+  .nav-cta .btn { padding: 10px 16px; }
+  .nav-burger {
+    display: none; margin-left: auto;
+    border: 1px solid var(--line); background: var(--paper); border-radius: var(--radius-control);
+    padding: 9px 12px; font: 600 14px "Inter", Arial, sans-serif; color: var(--brand-ink); cursor: pointer;
+  }
+  .nav-menu-plate { flex-direction: column; gap: 4px; padding: 12px 4px 18px; border-top: 1px solid var(--line); }
+  .nav-menu-plate a { padding: 10px 0; font-weight: 500; }
+
+  /* ---------- hero ---------- */
+  .hero { background: linear-gradient(180deg, var(--sky) 0%, rgba(234, 242, 255, .25) 100%); padding: 72px 0 88px; }
+  .hero .wrap { display: grid; grid-template-columns: 1.05fr .95fr; gap: 56px; align-items: center; }
+  .hero-copy { display: grid; gap: 22px; justify-items: start; }
+  .hero-sub { color: var(--muted); max-width: 52ch; }
+  .hero-cta { display: flex; gap: 12px; flex-wrap: wrap; }
+  .hero-trust { display: flex; gap: 10px; align-items: center; color: var(--muted-2); font-size: 14px; }
+  .stars { color: #f59e0b; letter-spacing: 2px; }
+
+  /* inbox mock */
+  .mock { position: relative; }
+  .mock-window {
+    background: var(--paper);
+    border: 1px solid var(--line-blue);
+    border-radius: var(--radius-hero);
+    box-shadow: var(--shadow-pop);
+    overflow: hidden;
+  }
+  .mock-bar { display: flex; align-items: center; gap: 10px; padding: 14px 20px; border-bottom: 1px solid var(--line); }
+  .mock-bar .dots { display: flex; gap: 6px; }
+  .mock-bar .dots i { width: 9px; height: 9px; border-radius: 50%; background: var(--line); }
+  .mock-bar .dots i:first-child { background: #da473f; }
+  .mock-bar .dots i:nth-child(2) { background: #f59e0b; }
+  .mock-bar .dots i:nth-child(3) { background: var(--wa); }
+  .mock-bar .title { font-size: 13px; font-weight: 600; color: var(--muted); }
+  .mock-body { display: grid; grid-template-columns: 1fr 1fr; }
+  .mock-list { border-right: 1px solid var(--line); padding: 14px; display: grid; gap: 8px; background: var(--paper-warm); }
+  .chat-row {
+    display: grid; grid-template-columns: 34px 1fr auto; gap: 10px; align-items: center;
+    padding: 9px 10px; border-radius: 10px; background: var(--paper); border: 1px solid transparent;
+  }
+  .chat-row.active { border-color: var(--line-blue); background: var(--sky-soft); }
+  .chat-row + .chat-row { opacity: .92; }
+  .ava { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: 700; color: #fff; flex: none; }
+  .chat-who { font-size: 13px; font-weight: 600; line-height: 16px; }
+  .chat-msg { font-size: 11.5px; color: var(--muted-2); line-height: 15px; }
+  .chat-meta { text-align: right; font-size: 10.5px; color: var(--muted-2); line-height: 14px; }
+  .wa-mark { color: var(--wa); }
+  .mock-chat { padding: 14px; display: grid; gap: 10px; align-content: start; }
+  .bubble { max-width: 88%; padding: 9px 12px; border-radius: 12px; font-size: 12.5px; line-height: 18px; }
+  .bubble.in { background: var(--sky); border-top-left-radius: 4px; justify-self: start; }
+  .bubble.out { background: var(--brand); color: #fff; border-top-right-radius: 4px; justify-self: end; }
+  .bubble .stamp { display: block; font-size: 9.5px; opacity: .75; margin-top: 4px; text-align: right; }
+  .composer { display: flex; gap: 8px; padding: 9px; border: 1px solid var(--line-blue); border-radius: 10px; background: var(--paper-warm); font-size: 12px; color: var(--muted-2); justify-content: space-between; align-items: center; }
+  .composer .send { background: var(--brand); color: #fff; border-radius: 7px; padding: 5px 12px; font-weight: 600; font-size: 11.5px; }
+  .mock-chip {
+    position: absolute; right: 24px; bottom: -72px;
+    background: var(--paper); border: 1px solid var(--line-blue); border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card); padding: 12px 16px; display: grid; gap: 2px;
+  }
+  .mock-chip .k { font-size: 11px; color: var(--muted-2); }
+  .mock-chip .v { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .mock-chip .v small { font-size: 12px; font-weight: 600; color: #12b76a; }
+
+  /* ---------- logo strip ---------- */
+  .logos { padding: 40px 0 8px; }
+  .logos .wrap { display: flex; flex-wrap: wrap; gap: 18px 40px; align-items: center; justify-content: center; }
+  .logos .lead { width: 100%; text-align: center; color: var(--muted-2); font-size: 13px; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 6px; }
+  .logomark { font-weight: 700; font-size: 17px; color: #9aa4b2; letter-spacing: -0.01em; }
+
+  /* ---------- product cards ---------- */
+  section.pad { padding: 72px 0; }
+  .section-head { max-width: 62ch; margin-bottom: 36px; display: grid; gap: 12px; }
+  .section-head.center { margin-inline: auto; text-align: center; justify-items: center; }
+  .section-head p { color: var(--muted); }
+  .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+  .cards.two { grid-template-columns: repeat(2, 1fr); }
+  .card {
+    background: var(--paper); border: 1px solid var(--line-blue); border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card); padding: 24px; display: grid; gap: 12px; align-content: start;
+    transition: transform .15s ease, box-shadow .15s ease;
+    min-width: 0;
+  }
+  .card:hover { transform: translateY(-3px); box-shadow: var(--shadow-pop); }
+  .card .icon {
+    width: 44px; height: 44px; border-radius: 10px; display: grid; place-items: center;
+    background: linear-gradient(135deg, var(--brand) 0%, var(--cyan) 100%); color: #fff;
+  }
+  .card .icon svg { width: 22px; height: 22px; }
+  .card p { color: var(--muted); font-size: 14.5px; line-height: 22px; }
+  .card .btn-link { font-size: 14px; }
+
+  /* ---------- dark stats band ---------- */
+  .band {
+    background: linear-gradient(135deg, var(--brand-deep) 0%, var(--brand-dark) 100%);
+    color: #fff; padding: 76px 0;
+  }
+  .band .section-head { max-width: none; margin-inline: auto; }
+  .band .section-head p { color: rgba(255, 255, 255, .78); }
+  .band .eyebrow { color: #9fd9ff; }
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+  .stat { border-left: 2px solid rgba(255, 255, 255, .28); padding-left: 18px; min-width: 0; }
+  .stat .num { font-size: clamp(30px, 4vw, 44px); font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }
+  .stat .lbl { color: rgba(255, 255, 255, .78); font-size: 14px; line-height: 20px; margin-top: 6px; }
+  .check-grid { margin-top: 44px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .check { display: flex; gap: 10px; align-items: flex-start; font-size: 15px; color: rgba(255, 255, 255, .92); }
+  .check .tick { width: 18px; height: 18px; margin-top: 2px; border-radius: 50%; background: #9fd9ff; color: var(--brand-dark); display: grid; place-items: center; font-size: 11px; font-weight: 700; flex: none; }
+
+  /* ---------- steps ---------- */
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .step { position: relative; background: var(--sky-soft); border: 1px solid var(--line-blue); border-radius: var(--radius-card); padding: 24px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+  .step .no { font-size: 13px; font-weight: 700; color: var(--brand); font-variant-numeric: tabular-nums; letter-spacing: .08em; }
+  .step p { color: var(--muted); font-size: 14.5px; line-height: 22px; }
+
+  /* ---------- quotes ---------- */
+  .quotes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .quote { background: var(--paper); border: 1px solid var(--line-blue); border-radius: var(--radius-card); box-shadow: var(--shadow-card); padding: 24px; display: grid; gap: 12px; align-content: start; min-width: 0; }
+  .quote .mark { font-size: 40px; line-height: 1; color: var(--brand); font-weight: 700; }
+  .quote blockquote { margin: 0; font-size: 15px; line-height: 24px; color: var(--ink); }
+  .quote .person { display: grid; gap: 2px; font-size: 13px; border-top: 1px solid var(--line); padding-top: 12px; }
+  .quote .person b { color: var(--brand-ink); }
+  .quote .person span { color: var(--muted-2); }
+
+  /* ---------- cta ---------- */
+  .cta-band { padding: 80px 0; }
+  .cta-inner {
+    background: linear-gradient(120deg, var(--brand) 0%, var(--brand-deep) 60%, var(--brand-dark) 100%);
+    border-radius: var(--radius-hero); padding: 52px 48px;
+    display: grid; grid-template-columns: 1.2fr .8fr; gap: 32px; align-items: center;
+    box-shadow: var(--shadow-pop);
+  }
+  .cta-inner h2 { color: #fff; margin-bottom: 10px; }
+  .cta-inner p { color: rgba(255, 255, 255, .8); }
+  .cta-actions { display: flex; gap: 12px; justify-content: flex-end; flex-wrap: wrap; }
+  .cta-actions .btn-primary { background: #fff; color: var(--brand); }
+  .cta-actions .btn-primary:hover { background: var(--sky); }
+
+  /* ---------- faq ---------- */
+  .faq { max-width: 760px; margin: 0 auto; display: grid; gap: 12px; }
+  details.item { background: var(--paper); border: 1px solid var(--line-blue); border-radius: 10px; }
+  details.item summary {
+    list-style: none; cursor: pointer; padding: 16px 20px;
+    display: flex; justify-content: space-between; align-items: center; gap: 12px;
+    font-weight: 600; font-size: 15.5px;
+  }
+  details.item summary::-webkit-details-marker { display: none; }
+  details.item summary .plus { color: var(--brand); font-weight: 700; flex: none; }
+  details.item[open] summary .plus { transform: rotate(45deg); }
+  details.item .ans { padding: 0 20px 16px; color: var(--muted); font-size: 14.5px; line-height: 22px; }
+
+  /* ---------- footer ---------- */
+  footer.site { background: var(--paper-warm); border-top: 1px solid var(--line); padding: 56px 0 32px; margin-top: 8px; }
+  .foot-grid { display: grid; grid-template-columns: 1.3fr .8fr .8fr .8fr; gap: 36px; }
+  .foot-grid h4 { margin: 0 0 14px; font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted-2); }
+  .foot-grid ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; }
+  .foot-grid a { font-size: 14px; color: var(--muted); }
+  .foot-grid a:hover { color: var(--brand); }
+  .foot-brand p { color: var(--muted); font-size: 14px; line-height: 22px; margin-top: 12px; max-width: 34ch; }
+  .news-form { display: flex; gap: 8px; margin-top: 16px; max-width: 320px; }
+  .news-form input {
+    flex: 1; min-width: 0; font: 400 14px "Inter", Arial, sans-serif;
+    padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius-control); background: var(--paper); color: var(--brand-ink);
+  }
+  .news-form input:focus { outline: 2px solid var(--brand); outline-offset: 1px; border-color: var(--brand); }
+  .news-form .btn { padding: 10px 14px; }
+  .foot-note { margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--line); display: grid; gap: 8px; }
+  .disclose { color: var(--muted-2); font-size: 12.5px; line-height: 18px; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(8px);
+    background: var(--brand-ink); color: #fff; padding: 10px 18px; border-radius: 999px;
+    font-size: 13px; opacity: 0; pointer-events: none; transition: opacity .2s ease, transform .2s ease; z-index: 20;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ---------- responsive ---------- */
+  @media (max-width: 1000px) {
+    .cards { grid-template-columns: repeat(2, 1fr); }
+    .stats { grid-template-columns: repeat(2, 1fr); row-gap: 32px; }
+    .check-grid { grid-template-columns: 1fr 1fr; }
+    .quotes { grid-template-columns: 1fr; }
+    .steps { grid-template-columns: 1fr; }
+    .cta-inner { grid-template-columns: 1fr; padding: 36px 28px; }
+    .cta-actions { justify-content: flex-start; }
+    .foot-grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 760px) {
+    .nav-links, .nav-cta { display: none; }
+    .nav-burger { display: inline-flex; }
+    .hero { padding: 48px 0 64px; }
+    .hero .wrap { grid-template-columns: 1fr; gap: 40px; }
+    .mock-body { grid-template-columns: 1fr; }
+    .mock-list { border-right: 0; border-bottom: 1px solid var(--line); }
+    .mock-chat { display: none; }
+    .mock-chip { position: static; margin-top: 12px; }
+    .cards { grid-template-columns: 1fr; }
+    .check-grid { grid-template-columns: 1fr; }
+    .foot-grid { grid-template-columns: 1fr; gap: 28px; }
+    section.pad { padding: 52px 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .btn, .card, .toast { transition: none; }
+  }
+</style>
+
+<div class="topline micro">
+  <div class="wrap">
+    <a href="#faq">Punya pertanyaan? Bicara dengan tim kami</a>
+  </div>
+</div>
+
+<header class="site">
+  <div class="wrap">
+    <nav class="nav" aria-label="Utama">
+      <a href="#" class="wordmark" aria-label="Mekari Qontak"><b>mekari</b><span>qontak</span></a>
+      <div class="nav-links">
+        <a href="#produk">Produk</a>
+        <a href="#cara">Cara Kerja</a>
+        <a href="#harga">Harga</a>
+        <a href="#pelanggan">Pelanggan</a>
+        <a href="#faq">FAQ</a>
+      </div>
+      <div class="nav-cta">
+        <a class="btn btn-secondary" href="#">Masuk</a>
+        <a class="btn btn-primary" href="#">Coba Gratis</a>
+      </div>
+      <button class="nav-burger" id="burger" aria-expanded="false" aria-controls="nav-menu">Menu</button>
+    </nav>
+    <div class="nav-menu-plate" id="nav-menu" hidden>
+      <a href="#produk">Produk</a>
+      <a href="#cara">Cara Kerja</a>
+      <a href="#harga">Harga</a>
+      <a href="#pelanggan">Pelanggan</a>
+      <a href="#faq">FAQ</a>
+      <a class="btn btn-primary" href="#" style="margin-top:8px; justify-self:start;">Coba Gratis</a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="wrap">
+      <div class="hero-copy">
+        <span class="pill"><span class="pill__dot"></span>CRM &amp; Omnichannel untuk Perusahaan Indonesia</span>
+        <h1 class="h1">Platform AI Customer Engagement Terintegrasi dalam Satu Sistem</h1>
+        <p class="hero-sub body">Kelola CRM, WhatsApp Official, chat omnichannel, dan telepon dalam satu platform. Dipercaya lebih dari 1.500 perusahaan untuk menjangkau, menjawab, dan melayani pelanggan lebih cepat.</p>
+        <div class="hero-cta">
+          <a class="btn btn-primary" href="#">Coba Gratis Sekarang</a>
+          <a class="btn btn-secondary" href="#">Chat ke Tim Sales</a>
+        </div>
+        <div class="hero-trust"><span class="stars" aria-hidden="true">&#9733;&#9733;&#9733;&#9733;&#9733;</span> 4,8/5 dari ulasan pengguna di situs agregator</div>
+      </div>
+
+      <div class="mock" aria-label="Pratinjau aplikasi">
+        <div class="mock-window">
+          <div class="mock-bar">
+            <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+            <span class="title">Qontak Chat — Inbox Omnichannel</span>
+          </div>
+          <div class="mock-body">
+            <div class="mock-list">
+              <div class="chat-row active">
+                <span class="ava" style="background: var(--brand);">RD</span>
+                <span style="min-width:0;"><span class="chat-who">Ratna Dewi</span><br><span class="chat-msg">Halo, saya mau tanya katalog…</span></span>
+                <span class="chat-meta">10:12<br><svg class="wa-mark" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-label="WhatsApp"><path d="M12 2a10 10 0 0 0-8.5 15.3L2 22l4.9-1.4A10 10 0 1 0 12 2Z"/></svg></span>
+              </div>
+              <div class="chat-row">
+                <span class="ava" style="background: var(--cyan);">BN</span>
+                <span style="min-width:0;"><span class="chat-who">Bima Nugraha</span><br><span class="chat-msg">Status pesanan #4471 kapan kirim?</span></span>
+                <span class="chat-meta">09:58<br><svg class="wa-mark" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-label="WhatsApp"><path d="M12 2a10 10 0 0 0-8.5 15.3L2 22l4.9-1.4A10 10 0 1 0 12 2Z"/></svg></span>
+              </div>
+              <div class="chat-row">
+                <span class="ava" style="background: var(--brand-deep);">SA</span>
+                <span style="min-width:0;"><span class="chat-who">Sinta Aulia</span><br><span class="chat-msg">Terima kasih, sudah terkirim</span></span>
+                <span class="chat-meta">Kemarin<br>Inbox Web</span>
+              </div>
+            </div>
+            <div class="mock-chat">
+              <div class="bubble in">Halo kak, produknya ready untuk pembelian 50 unit?<span class="stamp">10:12</span></div>
+              <div class="bubble out">Ready, Kak Ratna! Saya kirim penawarannya via email &#128231;<span class="stamp">10:13 &#10003;&#10003;</span></div>
+              <div class="bubble out">Boleh saya bantu atur jadwal demo besok jam 10?<span class="stamp">10:14 &#10003;&#10003;</span></div>
+              <div class="composer"><span>Tulis pesan…</span><span class="send">Kirim</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="mock-chip">
+          <span class="k">Broadcast terkirim</span>
+          <span class="v">98,2% <small>&#9650; 3,4%</small></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="logos">
+    <div class="wrap">
+      <p class="lead">Dipercaya oleh perusahaan terkemuka</p>
+      <span class="logomark">astra</span>
+      <span class="logomark">KINO</span>
+      <span class="logomark">Trakindo</span>
+      <span class="logomark">bluebird</span>
+      <span class="logomark">JNE</span>
+      <span class="logomark">sinarmas</span>
+    </div>
+  </section>
+
+  <section class="pad" id="produk">
+    <div class="wrap">
+      <div class="section-head center">
+        <span class="eyebrow">Produk</span>
+        <h2 class="h2">Satu platform, semua kanal pelanggan</h2>
+        <p class="body">Mulai dari modul yang paling Anda butuhkan, lalu kembangkan seiring pertumbuhan tim Anda.</p>
+      </div>
+      <div class="cards">
+        <article class="card">
+          <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><circle cx="8" cy="12" r="3"/><circle cx="17" cy="7" r="2.5"/><circle cx="16" cy="17" r="2.5"/></svg></span>
+          <h3 class="h3">Qontak CRM</h3>
+          <p>Kelola prospek, pelanggan, dan pipeline penjualan dengan database terpusat yang bisa diakses seluruh tim.</p>
+          <a class="btn-link" href="#">Pelajari lebih lanjut &#8594;</a>
+        </article>
+        <article class="card">
+          <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.5 8.5 0 0 1-12.5 7.5L3 21l2-5.5A8.5 8.5 0 1 1 21 11.5Z"/><path d="M8.5 10.5h7M8.5 13.5h4"/></svg></span>
+          <h3 class="h3">WhatsApp Official</h3>
+          <p>Broadcast dan balas pelanggan lewat WhatsApp Business API resmi, lengkap dengan template dan verifikasi nama bisnis.</p>
+          <a class="btn-link" href="#">Pelajari lebih lanjut &#8594;</a>
+        </article>
+        <article class="card">
+          <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a9 9 0 0 0-4 17l-1 3 3.5-2A9 9 0 1 0 12 3Z"/><path d="M7 8h10M7 12h6"/></svg></span>
+          <h3 class="h3">Omnichannel Chat</h3>
+          <p>Satukan WhatsApp, Instagram, Facebook, dan situs web dalam satu inbox dengan aturan distribusi otomatis.</p>
+          <a class="btn-link" href="#">Pelajari lebih lanjut &#8594;</a>
+        </article>
+        <article class="card">
+          <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5a2 2 0 0 1 2-2h2l2 5-2.5 1.5a12 12 0 0 0 5 5L14 14l5 2v2a2 2 0 0 1-2 2A15 15 0 0 1 4 5Z"/></svg></span>
+          <h3 class="h3">Power Dialer</h3>
+          <p>Raih dua kali lebih banyak telepanasan dengan antrean panggilan otomatis dan catatan yang terekam otomatis.</p>
+          <a class="btn-link" href="#">Pelajari lebih lanjut &#8594;</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="wrap">
+      <div class="section-head center">
+        <span class="eyebrow">Kenapa Qontak</span>
+        <h2 class="h2" style="color:#fff;">Dibangun untuk kenyataan pasar Indonesia</h2>
+        <p class="body">Kanal, kepatuhan, dan dukungan dalam satu langganan — tanpa biaya silang antar sistem.</p>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="num">1.500+</div><div class="lbl">perusahaan aktif menggunakan platform</div></div>
+        <div class="stat"><div class="num">98,2%</div><div class="lbl">tingkat keberhasilan pengiriman broadcast WA</div></div>
+        <div class="stat"><div class="num">150+</div><div class="lbl">staf support &amp; development lokal</div></div>
+        <div class="stat"><div class="num">2&#215;</div><div class="lbl">rata-rata kecepatan respon pertama tim sales</div></div>
+      </div>
+      <div class="check-grid">
+        <span class="check"><span class="tick">&#10003;</span> Terdaftar dan teraudit di bawah regulasi Kominfo &amp; ISO 27001</span>
+        <span class="check"><span class="tick">&#10003;</span> Integrasi langsung dengan ERP, HRIS, dan sistem pembayaran</span>
+        <span class="check"><span class="tick">&#10003;</span> Onboarding, migrasi data, dan pelatihan tim dari satu tim yang sama</span>
+        <span class="check"><span class="tick">&#10003;</span> Status kesehatan layanan dipantau 24/7 dengan SLA berkontrak</span>
+        <span class="check"><span class="tick">&#10003;</span> Template pesan disesuaikan dengan kebijakan perubahan WhatsApp</span>
+        <span class="check"><span class="tick">&#10003;</span> Data pelanggan tersimpan di pusat data dengan enkripsi saat simpan</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="pad" id="cara">
+    <div class="wrap">
+      <div class="section-head center">
+        <span class="eyebrow">Cara Kerja</span>
+        <h2 class="h2">Perjalanan implementasi satu-dua-tiga</h2>
+        <p class="body">Rata-rata tim produksi baru berjalan penuh dalam 14 hari kerja.</p>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <span class="no">01 — KONSULTASI</span>
+          <h3 class="h3">Pilih modul &amp; demo bersama</h3>
+          <p>Konsultasikan alur penjualan Anda, lalu lihat demo produk dengan data dan skenario tim Anda sendiri.</p>
+        </div>
+        <div class="step">
+          <span class="no">02 — ONBOARDING</span>
+          <h3 class="h3">Setup &amp; migrasi data</h3>
+          <p>Petunjuk teknis memigrasikan kontak, menautkan nomor WhatsApp resmi, dan menyiapkan template pesan.</p>
+        </div>
+        <div class="step">
+          <span class="no">03 — GO-LIVE</span>
+          <h3 class="h3">Pelatihan &amp; pendampingan</h3>
+          <p>Tim Anda dilatih memakai inbox dan dashboard, lalu dipantau hingga KPI pertama tercapai.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="pad" id="pelanggan" style="padding-top: 0;">
+    <div class="wrap">
+      <div class="section-head center">
+        <span class="eyebrow">Pelanggan</span>
+        <h2 class="h2">Cerita dari tim yang memakainya</h2>
+      </div>
+      <div class="quotes">
+        <figure class="quote" style="margin:0;">
+          <div class="mark" aria-hidden="true">&#8220;</div>
+          <blockquote>Semenjak broadcast WA resmi, kampanye ulang tahun klien kami terkirim seragam dan pelaporannya langsung terbaca di dashboard CRM.</blockquote>
+          <figcaption class="person"><b>Manajer Hubungan Pelanggan</b><span>Perusahaan F&amp;B, nasional</span></figcaption>
+        </figure>
+        <figure class="quote" style="margin:0;">
+          <div class="mark" aria-hidden="true">&#8220;</div>
+          <blockquote>Satu inbox untuk semua kanal membuat SLA respon kami turun dari 4 jam ke 25 menit — tanpa menambah kepala.</blockquote>
+          <figcaption class="person"><b>Supervisor Customer Care</b><span>Agen perjalanan &amp; tiket</span></figcaption>
+        </figure>
+        <figure class="quote" style="margin:0;">
+          <div class="mark" aria-hidden="true">&#8220;</div>
+          <blockquote>Power Dialer mengganti kartu telepon manual. Setiap telepanasan kini terekam otomatis di pipeline, tidak ada prospek telantar.</blockquote>
+          <figcaption class="person"><b>Team Leader Penjualan Telesales</b><span>Perusahaan logistik</span></figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <section class="pad" id="harga" style="padding-top: 0;">
+    <div class="wrap">
+      <div class="section-head center">
+        <span class="eyebrow">Harga</span>
+        <h2 class="h2">Transparan sejak awal, tanpa biaya tersembunyi</h2>
+        <p class="body">Uji coba gratis 14 hari tanpa kartu kredit. Tim sales membantu memilih paket sesuai jumlah pengguna dan volume pesan.</p>
+      </div>
+      <div class="cards two">
+        <article class="card">
+          <h3 class="h3">Paket Starter</h3>
+          <p>Untuk UMKM dan tim kecil: CRM dasar, kontak tanpa batas, dan inbox WhatsApp untuk satu nomor. Mulai <b style="color: var(--brand-ink);">Rp 250 ribu/bulan</b>.</p>
+          <a class="btn-link" href="#">Lihat rincian paket &#8594;</a>
+        </article>
+        <article class="card">
+          <h3 class="h3">Paket Enterprise</h3>
+          <p>Untuk operasi multidepartemen: semua kanal, Power Dialer, integrasi ERP, SLA berkontrak, dan manajer akun khusus. Harga sesuai lingkup.</p>
+          <a class="btn-link" href="#">Jadwalkan konsultasi &#8594;</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-band" style="padding-top: 0;">
+    <div class="wrap">
+      <div class="cta-inner">
+        <div>
+          <h2 class="h2">Siap melayani pelanggan lebih cepat?</h2>
+          <p class="body">Mulai uji coba gratis hari ini, atau minta demo terpandu 30 menit bersama tim produk kami.</p>
+        </div>
+        <div class="cta-actions">
+          <a class="btn btn-primary" href="#">Coba Gratis 14 Hari</a>
+          <a class="btn btn-ghost-light" href="#">Jadwalkan Demo</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="pad" id="faq" style="padding-top: 0;">
+    <div class="wrap">
+      <div class="section-head center">
+        <span class="eyebrow">FAQ</span>
+        <h2 class="h2">Pertanyaan yang sering ditanyakan</h2>
+      </div>
+      <div class="faq">
+        <details class="item" open>
+          <summary>Apa itu Qontak? <span class="plus" aria-hidden="true">+</span></summary>
+          <div class="ans">Qontak adalah platform customer engagement berbasis AI milik Mekari yang menyatukan CRM, WhatsApp Business API resmi, chat omnichannel, dan telepon dalam satu sistem.</div>
+        </details>
+        <details class="item">
+          <summary>Apakah nomor WhatsApp di Qontak resmi? <span class="plus" aria-hidden="true">+</span></summary>
+          <div class="ans">Ya. Nomor Anda diverifikasi sebagai WhatsApp Business API resmi, lengkap dengan avatar nama bisnis dan pelaporan delivery yang bisa diaudit.</div>
+        </details>
+        <details class="item">
+          <summary>Bisakah terintegrasi dengan sistem yang sudah saya pakai? <span class="plus" aria-hidden="true">+</span></summary>
+          <div class="ans">Bisa. Tersedia API terbuka dan konektor untuk ERP, HRIS, serta sistem pembayaran umum di Indonesia; tim implementasi membantu menautkannya.</div>
+        </details>
+        <details class="item">
+          <summary>Bagaimana model harga dan pembayarannya? <span class="plus" aria-hidden="true">+</span></summary>
+          <div class="ans">Per pengguna per bulan, dengan pilihan kuota pesan. Pembayaran bisa bulanan atau tahunan, dengan faktur PPN sesuai regulasi.</div>
+        </details>
+        <details class="item">
+          <summary>Seberapa cepat tim bisa mulai bekerja? <span class="plus" aria-hidden="true">+</span></summary>
+          <div class="ans">Rata-rata 14 hari kerja dari kickoff sampai go-live penuh, termasuk migrasi data dan pelatihan pengguna.</div>
+        </details>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <a href="#" class="wordmark"><b>mekari</b><span>qontak</span></a>
+        <p>Platform AI customer engagement yang membantu bisnis Indonesia menjangkau dan memelihara pelanggan di semua kanal.</p>
+        <form class="news-form" id="news">
+          <input type="email" id="news-email" placeholder="Email untuk info produk" aria-label="Email langganan" required>
+          <button class="btn btn-primary" type="submit">Langganan</button>
+        </form>
+      </div>
+      <div>
+        <h4>Produk</h4>
+        <ul>
+          <li><a href="#produk">Qontak CRM</a></li>
+          <li><a href="#produk">WhatsApp Official</a></li>
+          <li><a href="#produk">Omnichannel Chat</a></li>
+          <li><a href="#produk">Power Dialer</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Perusahaan</h4>
+        <ul>
+          <li><a href="#">Tentang Kami</a></li>
+          <li><a href="#">Karier</a></li>
+          <li><a href="#">Blog</a></li>
+          <li><a href="#">Ruang Pers</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Dukungan</h4>
+        <ul>
+          <li><a href="#faq">Pusat Bantuan</a></li>
+          <li><a href="#">Hubungi Kami</a></li>
+          <li><a href="#">Status Layanan</a></li>
+          <li><a href="#">Kebijakan Privasi</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-note">
+      <p class="micro" style="color: var(--muted-2);">&#169; 2026 Mekari — Semua dilindungi.</p>
+      <p class="disclose">Design study: direkonstruksi dari desain situs qontak.com — warna, tipografi, dan komponen diekstraksi dengan designlang (job 7fe8f4f8). Tidak berafiliasi dengan Mekari Qontak; hanya untuk pembelajaran.</p>
+    </div>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status">Berhasil berlangganan &#10003;</div>
+
+<script>
+  const burger = document.getElementById('burger');
+  const menu = document.getElementById('nav-menu');
+  burger.addEventListener('click', () => {
+    const open = menu.hidden;
+    menu.hidden = !open;
+    burger.setAttribute('aria-expanded', String(open));
+    burger.textContent = open ? 'Tutup' : 'Menu';
+  });
+
+  const news = document.getElementById('news');
+  news.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const toast = document.getElementById('toast');
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2200);
+    news.reset();
+  });
+</script>

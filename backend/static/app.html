@@ -1,0 +1,951 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Purchase Request Tool</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<script>
+  // apply saved (or system) theme before first paint to avoid a flash
+  (function () {
+    var t = 'light';
+    try {
+      t = localStorage.getItem('theme') ||
+          (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    } catch (e) {}
+    document.documentElement.dataset.theme = t;
+  })();
+</script>
+<style>
+  /* palette extracted from qontak.com (designlang, 2026-10-21): brand #0854d4,
+     ink #081833, sky tints #eaf2ff/#f5f9ff, line-blue hairline #d4e4ff;
+     dark theme maps the same hues onto the brand-dark navy #062a5e family */
+  :root {
+    --bg: #0a1226; --surface: #101b38; --border: #24365f; --card-border: #24365f;
+    --text: #e7edfa; --text-strong: #f5f8ff;
+    --muted: #93a3c4; --accent: #4d8dff; --accent-deep: #3a7bf0;
+    --primary-border: rgba(77, 141, 255, .8); --link: #7dbeff;
+    --chip: #182647; --hover: #182647; --pdf-bg: #0c1531; --line: #24365f;
+    --ok-bg: #173327; --ok-fg: #5fd39b;
+    --warn-bg: #33230f; --warn-fg: #e2b25f;
+    --bad-bg: #3a1717; --bad-fg: #ef9a9a;
+    --conf-high: #34d399; --conf-mid: #f0bc60; --conf-low: #f08a8a;
+  }
+  :root[data-theme="light"] {
+    /* qontak.com token set (designlang job 5607d846): page sky #f5f9ff,
+       control borders neutral #dcdfe4, card hairlines blue #d4e4ff,
+       body ink #2b2a35, headings #081833, muted #626b79, link #0b48b3 */
+    --bg: #f5f9ff; --surface: #ffffff; --border: #dcdfe4; --card-border: #d4e4ff;
+    --text: #2b2a35; --text-strong: #081833;
+    --muted: #626b79; --accent: #0854d4; --accent-deep: #0b48b3;
+    --primary-border: #4b61dd; --link: #0b48b3;
+    --chip: #eaf2ff; --hover: #eaf2ff; --pdf-bg: #eef3fa; --line: #dcdfe4;
+    --ok-bg: #dcf5e6; --ok-fg: #1a7f4b;
+    --warn-bg: #fdf0d4; --warn-fg: #8f6311;
+    --bad-bg: #fbe0e0; --bad-fg: #ad4040;
+    --conf-high: #1a7f4b; --conf-mid: #8f6311; --conf-low: #ab3c3c;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Inter", system-ui, Arial, sans-serif; background: var(--bg);
+         color: var(--text); min-height: 100vh; -webkit-font-smoothing: antialiased; }
+  /* qontak.com header: white surface floating on a shadow, not a hairline */
+  header { display: flex; align-items: center; justify-content: space-between;
+           padding: 12px 20px; border-bottom: 1px solid var(--border);
+           position: sticky; top: 0; background: var(--surface); z-index: 5;
+           box-shadow: 0 10px 15px -3px rgba(8, 24, 51, .06); }
+  header h1 { display: flex; align-items: center; gap: 9px; font-size: 15px;
+              font-weight: 700; letter-spacing: -0.01em; }
+  .logoMark { width: 26px; height: 26px; border-radius: 7px; flex: none;
+              display: grid; place-items: center;
+              background: linear-gradient(135deg, #0854d4 0%, #009bde 100%); }
+  .logoMark svg { width: 15px; height: 15px; }
+  .userbox { display: flex; gap: 8px; align-items: center; font-size: 13px; }
+  /* qontak buttons (cluster a): 7px 20px, radius 6, primary carries a
+     #4b61dd border, secondary is white with a neutral #dcdfe4 border */
+  button { font: 500 13px/1 "Inter", system-ui, sans-serif; cursor: pointer;
+           border: 1px solid var(--border); background: var(--surface);
+           color: var(--text); padding: 7px 16px; border-radius: 6px; }
+  button.primary { background: var(--accent); border-color: var(--primary-border);
+                   color: #fff; font-weight: 600;
+                   transition: background-color .15s ease, box-shadow .15s ease; }
+  button.primary:hover:not(:disabled) { background: var(--accent-deep);
+                   box-shadow: 0 8px 16px -6px rgba(8, 84, 212, .45); }
+  button:not(.primary):hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  button:disabled { background: var(--surface); border-color: var(--border);
+                    color: var(--muted); cursor: not-allowed; opacity: .6; }
+  main { margin: 0 auto; padding: 20px 20px; }
+  /* qontak cards: blue hairline + the site's layered soft elevation (sh3) */
+  .card { background: var(--surface); border: 1px solid var(--card-border);
+          border-radius: 12px; padding: 16px; margin-bottom: 16px;
+          box-shadow: 0 6px 13px rgba(8, 24, 51, .05), 0 23px 23px rgba(8, 24, 51, .04),
+                      0 51px 31px rgba(8, 24, 51, .03), 0 92px 37px rgba(8, 24, 51, .01); }
+  .grid { display: grid; grid-template-columns: minmax(300px, 0.9fr) minmax(0, 1.15fr) minmax(0, 1fr);
+          gap: 16px; align-items: start; }
+  @media (max-width: 1100px) { .grid { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 820px) { .grid { grid-template-columns: 1fr; } }
+  #pdfFrame, #pdfScroll { width: 100%; height: 82vh; border: 0; border-radius: 8px;
+                          background: var(--pdf-bg); }
+  #pdfScroll { overflow-y: auto; }
+  #pdfToolbar { display: flex; gap: 6px; align-items: center; margin-bottom: 8px; }
+  #pdfToolbar button { padding: 3px 9px; }
+  .pg { position: relative; margin: 10px auto; background: #fff;
+        box-shadow: 0 2px 10px rgba(0,0,0,.3); }
+  .pg canvas { display: block; }
+  /* pdf.js text layer: invisible text over the canvas, only visible when
+     highlighted by a Review-panel click or selected by the user */
+  .tl { position: absolute; inset: 0; overflow: hidden; line-height: 1;
+        text-size-adjust: none; forced-color-adjust: none; transform-origin: 0 0; }
+  .tl span { position: absolute; color: transparent; white-space: pre;
+             cursor: text; transform-origin: 0% 0%; }
+  .tl .pdvHL { background: rgba(255, 213, 74, .4); border-radius: 2px;
+               box-shadow: 0 0 0 1px rgba(185, 139, 0, .55); }
+  /* whole-line block behind an item-row selection: a full-width band under
+     the text layer, slightly lighter than the text highlight */
+  .pdvRow { position: absolute; left: -4px; right: -4px; z-index: 0;
+            background: rgba(255, 213, 74, .28); border-radius: 3px;
+            pointer-events: none; }
+  #pdfEmpty { padding: 30px 6px; text-align: center; }
+  h2 { font-size: 12px; color: var(--accent); font-weight: 600;
+       text-transform: uppercase; letter-spacing: .12em; margin-bottom: 10px; }
+  label { font-size: 12px; color: var(--muted); display: block; margin: 8px 0 3px; }
+  input, select { font: inherit; font-size: 13px; width: 100%;
+                  background: var(--surface); color: var(--text);
+                  border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; }
+  input:focus, select:focus { outline: 2px solid var(--accent); outline-offset: 1px;
+                              border-color: var(--accent); }
+  .muted { color: var(--muted); font-size: 12px; }
+  /* qontak badge: white, 12px/600, radius 999 — tinted states override the bg */
+  .status { display: inline-block; padding: 4px 10px; border-radius: 999px;
+            font-size: 11px; font-weight: 600;
+            background: var(--surface); border: 1px solid var(--line); }
+  .status.approved { background: var(--ok-bg); color: var(--ok-fg); }
+  .status.pending_approval, .status.submitted { background: var(--warn-bg); color: var(--warn-fg); }
+  .status.rejected { background: var(--bad-bg); color: var(--bad-fg); }
+  .status.draft { color: var(--muted); }
+  .status.extracted { background: var(--ok-bg); color: var(--ok-fg); }  /* hijau: ekstraksi utuh */
+  .status.partial { background: var(--warn-bg); color: var(--warn-fg); }
+  .status.failed { background: var(--bad-bg); color: var(--bad-fg); }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th { color: var(--muted); font-weight: 500; text-align: center; font-size: 11px;
+       text-transform: uppercase; padding: 6px 8px;
+       border-bottom: 1px solid var(--line); }
+  td { padding: 4px 6px; border-bottom: 1px solid var(--line); text-align: center;
+       word-break: break-word; }
+  /* keep tables inside their card: wrapper scrolls, long text ellipsises */
+  .tw { overflow-x: auto; }
+  /* cap PR list to the viewport so the left column never overflows the screen */
+  #prListWrap { max-height: calc(100vh - 320px); min-height: 160px; overflow-y: auto; }
+  #prListWrap th { position: sticky; top: 0; background: var(--surface); z-index: 1; }
+  /* keep the Review & submit card within the viewport too: its body scrolls
+     internally so the action buttons stay visible at the bottom */
+  #detailBody { max-height: calc(100vh - 240px); overflow-y: auto; }
+  /* flex layouts below can beat the UA [hidden] rule — keep it authoritative */
+  [hidden] { display: none !important; }
+  /* full width: the three cards share one viewport height and bottom-align */
+  @media (min-width: 1101px) {
+    .grid { height: calc(100vh - 92px); grid-template-rows: minmax(0, 1fr);
+            align-items: stretch; }
+    .grid > div { min-height: 0; }
+    .grid > div > .card { height: 100%; margin-bottom: 0; overflow: hidden;
+                          display: flex; flex-direction: column; }
+    .prSection { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+    #prListWrap { flex: 1; max-height: none; min-height: 0; }
+    #pdfFrame, #pdfScroll { height: auto; flex: 1; min-height: 0; }
+    #detailBody { flex: 1; max-height: none; min-height: 0; }
+  }
+  td.ell { max-width: 200px; overflow: hidden; text-overflow: ellipsis;
+           white-space: nowrap; }
+  td.time { white-space: nowrap; }
+  tr.clickable:hover { background: var(--hover); cursor: pointer; }
+  tr.active { background: var(--hover); box-shadow: inset 3px 0 0 var(--accent); }
+  .conf.high { color: var(--conf-high); font-weight: 600; }
+  .conf.mid  { color: var(--conf-mid); font-weight: 600; }
+  .conf.low  { color: var(--conf-low); font-weight: 600; }
+  .fh[data-pf], tr[data-pf] { cursor: pointer; }
+  .fh[data-pf]:hover { box-shadow: 0 0 0 2px var(--accent); }
+  tr.conf-high, .fh.conf-high { background: rgba(46, 158, 107, .10); }
+  tr.conf-mid,  .fh.conf-mid  { background: rgba(247, 196, 96, .44); }
+  tr.conf-low,  .fh.conf-low  { background: rgba(246, 122, 122, .48); }
+  .fh { padding: 5px 7px; border-radius: 6px; }
+  .actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; align-items: center; }
+  #toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+           background: var(--surface); border: 1px solid var(--border);
+           padding: 10px 16px; border-radius: 10px; display: none; font-size: 13px; z-index: 20; }
+  .warnbox { background: var(--warn-bg); color: var(--warn-fg); padding: 8px 12px;
+             border-radius: 8px; font-size: 12px; margin-top: 10px; }
+  .badbox { background: var(--bad-bg); color: var(--bad-fg); padding: 8px 12px;
+            border-radius: 8px; font-size: 12px; margin-top: 10px; }
+  .warnchip { color: var(--warn-fg); cursor: help; }
+  .okbox { background: var(--ok-bg); color: var(--ok-fg); padding: 8px 12px;
+           border-radius: 8px; font-size: 12px; margin-top: 10px; }
+  .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px; font-size: 13px; }
+</style>
+</head>
+<body>
+<header>
+  <h1><span class="logoMark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v5h5"/><path d="M6 3h8l5 5v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z"/><path d="M8 13h8M8 17h5"/></svg></span>Purchase Request Tool</h1>
+  <div style="display:flex; gap:8px; align-items:center">
+    <button id="themeBtn" onclick="toggleTheme()" title="Switch light/dark"
+            style="padding:5px 10px"></button>
+    <div class="userbox" id="userbox"></div>
+  </div>
+</header>
+<main>
+  <section id="loginView" style="max-width:380px;margin:60px auto;">
+    <div class="card">
+      <h2>Login</h2>
+      <label>User</label>
+      <select id="userSel" style="margin:8px 0" onchange="updateSignin()"></select>
+      <div class="actions">
+        <button id="signinBtn" class="primary" onclick="login()" disabled>Sign in</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="appView" hidden>
+    <div class="grid">
+      <div>
+        <div class="card">
+          <div id="extractOut" class="muted"></div>
+          <div class="prSection">
+            <h2>Purchase requests</h2>
+            <div style="display:flex; gap:8px; margin-bottom:10px">
+              <input id="prSearch" placeholder="Search title or total…"
+                     oninput="loadPrs()" style="flex:1; margin-bottom:0">
+              <select id="prStatus" onchange="loadPrs()" style="width:auto">
+                <option value="">All statuses</option>
+                <option value="draft">Draft</option>
+                <option value="submitted">Submitted</option>
+                <option value="pending_approval">Pending approval</option>
+                <option value="approved">Approved</option>
+                <option value="rejected">Rejected</option>
+              </select>
+              <select id="prLowConf" onchange="loadPrs()" style="width:auto"
+                      title="Filter by minimum confidence">
+                <option value="">Min: all</option>
+                <option value="low">Min &lt; 90%</option>
+              </select>
+            </div>
+            <div class="tw" id="prListWrap">
+            <table>
+              <thead><tr><th>Title</th><th>Total</th><th>Confident (Min)</th><th>Status</th><th>Time</th></tr></thead>
+              <tbody id="prList"></tbody>
+            </table>
+            </div>
+            <button onclick="document.getElementById('fileInput').click()"
+                    style="width:100%; margin-top:12px">Upload PDF</button>
+            <input type="file" id="fileInput" accept=".pdf" hidden
+                   onchange="uploadPdf(this.files[0])">
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card" id="pdfCard" hidden>
+          <h2>Source PDF</h2>
+          <div id="pdfToolbar" hidden>
+            <button onclick="pdfPage(1)" title="Previous page">◀</button>
+            <span class="muted" id="pdfPageInfo"></span>
+            <button onclick="pdfPage(2)" title="Next page">▶</button>
+            <span class="muted" style="margin-left:auto">
+              click a value in the Review panel to locate it here</span>
+          </div>
+          <div id="pdfScroll"></div>
+          <iframe id="pdfFrame" title="Source PDF" hidden></iframe>
+        </div>
+        <div class="card" id="pdfEmpty">
+          <p class="muted">Upload a PDF to create a PR —<br>the original document shows here for side-by-side review.</p>
+        </div>
+      </div>
+      <div>
+        <div class="card" id="detailCard" hidden>
+          <h2>Review &amp; submit</h2>
+          <div id="detailBody"></div>
+          <div class="actions" id="detailActions"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+<div id="toast"></div>
+<script>
+let me = null;
+
+const $ = id => document.getElementById(id);
+
+function paintThemeBtn() {
+  const b = $('themeBtn');
+  if (b) b.textContent = document.documentElement.dataset.theme === 'light' ? '🌙' : '☀️';
+}
+function toggleTheme() {
+  const t = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
+  document.documentElement.dataset.theme = t;
+  try { localStorage.setItem('theme', t); } catch (e) {}
+  paintThemeBtn();
+}
+paintThemeBtn();
+
+function toast(msg) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.style.display = 'block';
+  clearTimeout(t._h);
+  t._h = setTimeout(() => t.style.display = 'none', 3500);
+}
+
+async function api(path, opts = {}) {
+  const r = await fetch(path, { credentials: 'same-origin', ...opts });
+  if (!r.ok) {
+    let msg = r.statusText;
+    try { msg = (await r.json()).detail || msg; } catch (e) {}
+    throw new Error(msg);
+  }
+  return r.json();
+}
+
+function setUserbox(u) {
+  $('userbox').innerHTML =
+    '<b>' + u.username + '</b> · <span class="muted">' + u.role +
+    '</span> <button onclick="logout()">Logout</button>';
+}
+
+function enter(u) {
+  me = u;
+  $('loginView').hidden = true;
+  $('appView').hidden = false;
+  setUserbox(u);
+  init();
+}
+
+async function login() {
+  const fd = new FormData();
+  fd.append('username', $('userSel').value);
+  enter(await api('/login', { method: 'POST', body: fd }));
+}
+
+function logout() {
+  api('/logout', { method: 'POST' });
+  $('appView').hidden = true;
+  $('loginView').hidden = false;
+  $('userbox').innerHTML = '';
+  $('pdfCard').hidden = true;
+  $('pdfEmpty').hidden = false;
+  pvReset();
+}
+
+async function init() {
+  loadPrs();
+}
+
+function confCell(c) {
+  return '<td><span class="conf ' + (c == null ? 'low' : confClass(c)) + '">' +
+    (c != null ? Math.round(c * 100) + '%' : '—') + '</span></td>';
+}
+
+// created_at (ISO-8601 "2026-10-19T21:13:13Z") -> "5m ago"; abbreviated units
+const TIME_UNITS = [['m', 60], ['h', 3600], ['d', 86400],
+                    ['w', 604800], ['mo', 2635200], ['y', 31536000]];
+function timeAgo(iso) {
+  const t = new Date(iso).getTime();
+  if (isNaN(t)) return '—';
+  const s = Math.max(0, Math.floor((Date.now() - t) / 1000));
+  if (s < 60) return 'just now';
+  let name = 'm', n = s;
+  for (const [u, sec] of TIME_UNITS) {
+    if (sec > s) break;
+    name = u; n = Math.floor(s / sec);
+  }
+  return n + name + ' ago';
+}
+
+async function loadPrs() {
+  const prs = await api('/prs');
+  // one table, filtered in-browser: substring match on title, and on the
+  // raw total (digits typed with or without separators, e.g. "1250" or "12")
+  const q = ($('prSearch').value || '').trim().toLowerCase();
+  const qs = q.replace(/[ .,]/g, '');
+  const st = $('prStatus').value;
+  const lc = $('prLowConf').value === 'low';
+  const rows = (q || st || lc) ? prs.filter(p =>
+    (!st || p.status === st) &&
+    (!lc || (p.min_conf != null && p.min_conf < 0.9)) &&
+    (!q || (p.title || '').toLowerCase().includes(q) ||
+      String(p.total_val ?? '').includes(qs))) : prs;
+  if (!rows.length && (q || st || lc)) $('prList').innerHTML =
+    '<tr><td colspan="5" class="muted">No PR matches “' + esc(q) + '”' +
+    (st ? ' with status ' + st.replace('_', ' ') : '') +
+    (lc ? ' with min confidence < 90%' : '') + '</td></tr>';
+  else $('prList').innerHTML = rows.map(p =>
+    '<tr id="pr' + p.id + '" class="clickable' +
+      (p.id === currentPrId ? ' active' : '') +
+      '" onclick="showDetail(' + p.id + ')">' +
+    '<td class="ell" title="' + esc(p.title) + '">' + esc(p.title) + '</td>' +
+    '<td>' + esc(money(p.total_val, p.currency)) + '</td>' +
+    confCell(p.min_conf) +
+    '<td><span class="status ' + p.status + '">' + p.status.replace('_', ' ') + '</span></td>' +
+    '<td class="time">' + esc(timeAgo(p.created_at)) + '</td>' +
+    '</tr>').join('');
+}
+
+async function uploadPdf(f) {
+  if (!f) return;
+  $('extractOut').textContent = 'Uploading & extracting…';
+  const fd = new FormData();
+  fd.append('file', f);
+  try {
+    const res = await api('/extract', { method: 'POST', body: fd });
+    renderExtract(res, '/prs/' + encodeURIComponent(res.request_id) + '/pdf');
+    loadPrs();
+  } catch (e) { $('extractOut').textContent = '❌ ' + e.message; }
+}
+
+// currency for display: the standard symbols in the total column; ISO code
+// where the symbol is ambiguous ($ = USD/NAD/AUD — exactly the bug class the
+// benchmark's currency-nad-bare-dollar doc exists to catch)
+const CUR_SYM = { EUR: '€', GBP: '£', JPY: '¥', CNY: '¥', USD: '$' };
+function curSym(c) { return (c && CUR_SYM[c]) ? CUR_SYM[c] : (c || ''); }
+// symbols lead the amount ($92.66 — the formatting uses dot decimals, so the
+// English convention goes); bare ISO codes trail it (1 966,16 ZAR)
+function money(v, c) {
+  const s = (c && CUR_SYM[c]) || null;
+  if (s && v != null) return s + fmt(v);
+  return fmt(v) + (c ? ' ' + c : '');
+}
+
+function confClass(c) { return c >= 0.9 ? 'high' : c >= 0.7 ? 'mid' : 'low'; }
+
+function fmt(v) { return v != null ? (+v).toFixed(2) : '—'; }
+
+function esc(s) {
+  return String(s).replace(/"/g, '&quot;').replace(/</g, '&lt;');
+}
+
+function fieldRow(k, e) {
+  const names = {
+    quote_number: 'Quote no.', needed_by: 'Needed by', currency: 'Currency',
+    subtotal: 'Subtotal', tax: 'Tax/VAT', total: 'Total',
+    vendor_name: 'Vendor', vendor_id: 'Vendor ID', customer_text: 'Customer',
+    valid_until: 'Valid until', bill_to: 'Bill to', ship_to: 'Ship to',
+    payment_terms: 'Payment terms', incoterms: 'Incoterms'
+  };
+  // click the chip → pdfLocate shows where this value was extracted from
+  const nd = pdfNeedles(k, e.value);
+  return '<div class="fh conf-' + confClass(e.confidence) +
+      '" title="confidence ' + Math.round(e.confidence * 100) +
+      confHint(e.confidence) + '"' +
+      (nd.length ? ' data-pf="' + esc(JSON.stringify(nd)) +
+        '" onclick="pdfClickRow(this)"' : '') + '>' +
+    '<span class="muted">' + (names[k] || k) + '</span><br>' +
+    '<b>' + esc(e.value ?? '—') + '</b></div>';
+}
+
+const ITEM_WARN_RE = /^item '(.+?)':\s*(.*)$/;
+
+// tooltip text per confidence tier of THIS row: what the number means and
+// what to do — the reader hovering a green value must not be told to fix it
+function confHint(c) {
+  return {
+    high: '% — hijau: nilai ditemukan langsung di dokumen, tidak perlu koreksi',
+    mid: '% — kuning: nilai kurang pasti, bandingkan dengan PDF sebelum proses lebih lanjut',
+    low: '% — merah: nilai diperkirakan (inferensi/parsial), wajib diperiksa'
+  }[c == null ? 'low' : confClass(c)];
+}
+
+// warnings that start with "item '<key>':" belong to one line item (key = the
+// sku, or the description when no sku) — they show on that row's hover; the
+// rest are document-level and stay in the warnbox
+function splitWarnings(res) {
+  const items = res.items || [];
+  const perItem = {}, doc = [];
+  (res.warnings || []).forEach(w => {
+    const m = ITEM_WARN_RE.exec(w);
+    if (m) {
+      const it = items.find(i => (i.sku || i.description) === m[1]);
+      if (it) {
+        const key = it.sku || it.description;
+        (perItem[key] || (perItem[key] = [])).push(m[2]);
+        return;
+      }
+    }
+    doc.push(w);
+  });
+  return { perItem, doc };
+}
+
+function itemWarnCount(perItem) {
+  return Object.values(perItem).reduce((n, ws) => n + ws.length, 0);
+}
+
+function itemsTable(items, perItem) {
+  if (!items.length) return '<p class="muted">No items detected</p>';
+  return '<div class="tw"><table><thead><tr><th>SKU</th><th>Description</th><th>Qty</th>' +
+    '<th>Unit</th><th>Line total</th></tr></thead><tbody>' +
+    items.map(i => {
+      const key = i.sku || i.description;
+      const ws = (perItem && perItem[key]) || [];
+      // click the row → locate it in the PDF: the description is the most
+      // specific anchor, the sku and the cents-form price are fallbacks
+      const nd = [
+        ...pdfNeedles('description', i.description),
+        ...pdfNeedles('sku', i.sku),
+        ...pdfNeedles('line_total', i.line_total),
+      ];
+      return '<tr class="conf-' + confClass(i.confidence) + '"' +
+        (nd.length ? ' data-pf="' + esc(JSON.stringify(nd)) +
+          '" onclick="pdfClickRow(this)"' : '') +
+        ' title="confidence ' + Math.round(i.confidence * 100) +
+        confHint(i.confidence) +
+        (ws.length ? '\n⚠ ' + ws.map(esc).join('\n⚠ ') : '') + '">' +
+      '<td class="muted">' + (ws.length ? '<span class="warnchip">⚠</span> ' : '') +
+        (i.sku || '—') + '</td>' +
+      '<td class="ell" title="' + esc(i.description || '') + '">' +
+        esc(i.description || '—') + '</td>' +
+      '<td>' + (i.qty ?? '—') + '</td>' +
+      '<td>' + fmt(i.unit_price) + '</td>' +
+      '<td>' + fmt(i.line_total) + '</td></tr>';
+    }).join('') +
+    '</tbody></table></div>';
+}
+
+function extractSummary(res) {
+  const f = res.fields || {};
+  const keys = ['quote_number', 'needed_by', 'valid_until', 'vendor_name',
+                'vendor_id', 'bill_to', 'ship_to', 'subtotal', 'tax', 'total',
+                'currency', 'payment_terms', 'incoterms', 'customer_text'];
+  let html = '<div class="detail-grid">' +
+    keys.filter(k => f[k]).map(k => fieldRow(k, f[k])).join('') + '</div>';
+  html += '<h2 style="margin-top:14px">Items (' + (res.items || []).length + ')</h2>';
+  const split = splitWarnings(res);
+  html += itemsTable(res.items || [], split.perItem);
+  const nItemWarns = itemWarnCount(split.perItem);
+  if (nItemWarns) html += '<p class="muted" style="margin-top:8px">⚠ ' +
+    nItemWarns + ' item warning' + (nItemWarns > 1 ? 's' : '') +
+    ' — hover row (atau ikon ⚠) untuk lihat detailnya</p>';
+  html += '<p class="muted" style="margin-top:10px">Overall confidence: <span title="' +
+    esc('rata-rata confidence seluruh field & item — hover tiap field/baris untuk detailnya') +
+    '" style="cursor:help"><span class="conf ' + confClass(res.overall_confidence) + '">' +
+    Math.round(res.overall_confidence * 100) + '%</span></span></p>';
+  if (split.doc.length) html += '<div class="warnbox">⚠ ' +
+    split.doc.map(esc).join(' · ') + '</div>';
+  return html;
+}
+
+function showPdf(url) {
+  $('pdfEmpty').hidden = true;
+  $('pdfCard').hidden = false;
+  $('pdfToolbar').hidden = false;
+  $('pdfScroll').hidden = false;
+  $('pdfFrame').hidden = true;
+  $('pdfFrame').src = 'about:blank';
+  if (PV && PV.url === url) { $('pdfScroll').scrollTop = 0; return; }
+  openPdf(url).catch(() => fallbackPdf(url));
+}
+
+function fallbackPdf(url) {
+  // native-plugin fallback: the PDF still shows side-by-side, only the
+  // Review-panel locate feature goes off
+  PV = null;
+  $('pdfToolbar').hidden = true;
+  $('pdfScroll').hidden = true;
+  $('pdfFrame').hidden = false;
+  $('pdfFrame').src = url;
+}
+
+// ------------- PDF viewer (pdf.js, vendored in /pdfjs) + Review-panel locate
+// The source PDF renders on a real pdf.js text layer instead of the browser's
+// native plugin, so a field or item clicked in the Review panel can be found
+// in the document text and highlighted where it was extracted from.
+let pvLib = null, pvLibP = null;
+async function pdfLib() {
+  if (!pvLibP) pvLibP = import('/pdfjs/pdf.min.js').then(m => {
+    m.GlobalWorkerOptions.workerSrc = '/pdfjs/pdf.worker.min.js';
+    pvLib = m; return m;
+  });
+  return pvLibP;
+}
+
+// PV = {url, doc, pages:[{obj,scale,el,tl,ready}], texts:[], hl:[], io, page}
+let PV = null;
+const pvBusy = new Set();
+const pvNorm = s => String(s).toLowerCase().replace(/[^a-z0-9]/g, '');
+
+async function openPdf(url) {
+  const lib = await pdfLib();
+  const buf = await fetch(url, { credentials: 'same-origin' })
+    .then(r => { if (!r.ok) throw new Error(r.statusText); return r.arrayBuffer(); });
+  pvTeardown();
+  const data = new Uint8Array(buf);
+  const doc = await lib.getDocument({ data }).promise;
+  const scroll = $('pdfScroll');
+  scroll.innerHTML = '';
+  PV = { url, doc, pages: [], texts: [], hl: [], io: null, page: 1 };
+  const width = Math.max(280, scroll.clientWidth - 24);
+  const io = new IntersectionObserver(ents => ents.forEach(en => {
+    if (en.isIntersecting) pvRender(+en.target.dataset.page);
+  }), { root: scroll, rootMargin: '600px 0px' });
+  for (let i = 1; i <= doc.numPages; i++) {
+    const p = await doc.getPage(i);
+    const vp1 = p.getViewport({ scale: 1 });
+    const scale = width / vp1.width;
+    const el = document.createElement('div');
+    el.className = 'pg'; el.dataset.page = i;
+    el.style.width = Math.floor(width) + 'px';
+    el.style.height = Math.floor(vp1.height * scale) + 'px';
+    el.style.setProperty('--scale-factor', scale);
+    scroll.appendChild(el);
+    PV.pages.push({ obj: p, scale, el, tl: null, ready: false });
+    io.observe(el);
+  }
+  PV.io = io;
+  pvInfo();
+  scroll.onscroll = pvOnScroll;
+}
+
+function pvTeardown() {
+  if (!PV) return;
+  PV.io && PV.io.disconnect();
+  try { PV.doc.destroy(); } catch (e) {}  // worker terminate; page may be gone anyway
+  $('pdfScroll').onscroll = null;
+  PV = null;
+}
+
+function pvReset() {
+  pvTeardown();
+  const s = $('pdfScroll');
+  s.innerHTML = ''; s.scrollTop = 0;
+  $('pdfToolbar').hidden = true;
+  const f = $('pdfFrame');
+  f.hidden = true; f.src = 'about:blank';
+}
+
+async function pvRender(i) {
+  if (!PV) return;
+  const pg = PV.pages[i - 1];
+  if (!pg || pg.ready || pvBusy.has(i)) return;
+  pvBusy.add(i);
+  try {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const vp = pg.obj.getViewport({ scale: pg.scale });
+    const cvp = pg.obj.getViewport({ scale: pg.scale * dpr });
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.floor(cvp.width);
+    canvas.height = Math.floor(cvp.height);
+    canvas.style.width = Math.floor(vp.width) + 'px';
+    canvas.style.height = Math.floor(vp.height) + 'px';
+    pg.el.appendChild(canvas);
+    await pg.obj.render({ canvasContext: canvas.getContext('2d', { alpha: false }),
+                          viewport: cvp }).promise;
+    const content = await pg.obj.getTextContent();
+    const tl = document.createElement('div');
+    tl.className = 'tl';
+    pg.el.appendChild(tl);
+    await new pvLib.TextLayer({ textContentSource: content, container: tl, viewport: vp }).render();
+    pg.tl = tl;
+  } catch (e) { /* a failed page must not retry-loop; the canvas may still show */ }
+  finally { pg.ready = true; pvBusy.delete(i); }
+}
+
+function pvInfo() {
+  if (PV && PV.pages.length)
+    $('pdfPageInfo').textContent = 'page ' + PV.page + '/' + PV.pages.length;
+}
+
+function pvOnScroll() {
+  if (!PV) return;
+  const st = $('pdfScroll').scrollTop;
+  let cur = 1;
+  PV.pages.forEach((pg, i) => { if (pg.el.offsetTop <= st + 20) cur = i + 1; });
+  if (cur !== PV.page) { PV.page = cur; pvInfo(); }
+}
+
+function pdfPage(dir) {
+  if (!PV || !PV.pages.length) return;
+  const t = Math.max(1, Math.min(PV.pages.length, PV.page + (dir === 1 ? -1 : 1)));
+  PV.page = t;
+  $('pdfScroll').scrollTop = Math.max(0, PV.pages[t - 1].el.offsetTop - 8);
+  pvInfo();
+}
+
+// needle list for a Review-panel value, best-first. Printed money needs the
+// cents form first: "5.763,60" (DE) and "5,763.60" (EN) strip to the same
+// digit string, while the raw number strips to "57636" — try both.
+const MONEY_KEYS = new Set(['subtotal', 'tax', 'total', 'unit_price', 'line_total']);
+function pdfNeedles(k, v) {
+  const out = [];
+  const add = s => { s = pvNorm(s); if (s.length > 2 && !out.includes(s)) out.push(s); };
+  if (v == null) return out;
+  const s = String(v).trim();
+  if (MONEY_KEYS.has(k) && typeof v === 'number' && isFinite(v)) add(v.toFixed(2));
+  add(s);
+  return out;
+}
+
+async function pdfLocate(cands, label, fullRow) {
+  if (!PV || !PV.doc) return;        // native-plugin fallback — nothing to locate
+  const cs = (cands || []).filter(Boolean);
+  if (PV.rowBox) { PV.rowBox.remove(); PV.rowBox = null; }
+  PV.hl.forEach(el => el.classList.remove('pdvHL'));
+  PV.hl = [];
+  if (!cs.length) return;
+  for (let p = 1; p <= PV.pages.length; p++) {
+    if (PV.texts[p] == null) {
+      const c = await PV.pages[p - 1].obj.getTextContent();
+      PV.texts[p] = pvNorm(c.items.map(it => it.str).join('\n'));
+    }
+    for (const c of cs) {
+      if (PV.texts[p].includes(c)) { await pvShow(p, c, fullRow); return; }
+    }
+  }
+  toast('“' + label + '” was not found in the PDF text');
+}
+
+async function pvShow(p, cand, fullRow) {
+  const pg = PV.pages[p - 1];
+  $('pdfScroll').scrollTop = Math.max(0, pg.el.offsetTop - 8);
+  PV.page = p; pvInfo();
+  await pvRender(p);
+  if (!pg.tl) return;
+  // find the match again across the rendered text-layer spans so the exact
+  // extraction source gets highlighted
+  const spans = [...pg.tl.querySelectorAll('span')];
+  let hay = '';
+  const owner = [];
+  spans.forEach(sp => {
+    for (const ch of sp.textContent) { hay += ch; owner.push(sp); }
+  });
+  let nn = '';
+  const back = [];
+  for (let k = 0; k < hay.length; k++) {
+    const ch = hay[k].toLowerCase();
+    if (/[a-z0-9]/.test(ch)) { nn += ch; back.push(k); }
+  }
+  const at = nn.indexOf(cand);
+  if (at < 0) return;   // page-level match only (odd reading order) — page still shown
+  const from = back[at];
+  const to = back[Math.min(at + cand.length - 1, back.length - 1)];
+  const hits = new Set();
+  for (let k = from; k <= to; k++) hits.add(owner[k]);
+  PV.hl = [...hits];
+  PV.hl.forEach(el => el.classList.add('pdvHL'));
+  // item rows block the whole table row: a full-width band over the vertical
+  // extent of the matched text
+  if (fullRow && hits.size) {
+    const base = pg.el.getBoundingClientRect();
+    let y0 = Infinity, y1 = -Infinity;
+    PV.hl.forEach(sp => {
+      const r = sp.getBoundingClientRect();
+      y0 = Math.min(y0, r.top - base.top);
+      y1 = Math.max(y1, r.bottom - base.top);
+    });
+    const band = document.createElement('div');
+    band.className = 'pdvRow';
+    band.style.top = (y0 - 2) + 'px';
+    band.style.height = (y1 - y0 + 4) + 'px';
+    pg.el.insertBefore(band, pg.tl);
+    PV.rowBox = band;
+  }
+}
+
+function pdfClickRow(el) {
+  const b = el.querySelector('b');
+  const label = b ? b.textContent
+    : (el.cells && el.cells[1]) ? el.cells[1].textContent
+    : el.textContent.trim();
+  pdfLocate(JSON.parse(el.dataset.pf), label, el.tagName === 'TR');
+}
+
+// refit pages on window resize
+let pvRz = null;
+window.addEventListener('resize', () => {
+  if (!PV) return;
+  clearTimeout(pvRz);
+  pvRz = setTimeout(() => {
+    const url = PV.url;
+    pvTeardown();
+    $('pdfScroll').innerHTML = '';
+    openPdf(url).catch(() => {});
+  }, 250);
+});
+
+let currentDraft = null; // request_id from an upload preview, else null
+let currentPrId = null;  // request_id of the PR currently open in the detail pane
+
+function renderExtract(res, pdfUrl) {
+  currentDraft = res.request_id || null;
+  $('detailCard').hidden = false;
+  $('detailBody').innerHTML = extractBanner(res) + extractSummary(res);
+  if (pdfUrl) showPdf(pdfUrl);
+  if (res.extract_status === 'failed') {
+    // nothing was parsed: the PDF stays visible (the failure is the
+    // extraction's, not the document's) but there is nothing to submit
+    $('detailActions').innerHTML =
+      '<span class="muted">Nothing useful was extracted — fix the file and '
+      + 're-upload it, or keep the PDF above to fill the request manually.</span>';
+  } else if (currentDraft) {
+    $('detailActions').innerHTML =
+      '<input id="thresh" type="number" value="1000" style="max-width:110px">' +
+      '<button class="primary" onclick="submitPR(currentDraft)">Submit &amp; route</button>';
+  } else {
+    $('detailActions').innerHTML =
+      '<span class="muted">Preview only — upload the PDF (or any PDF) to create a PR.</span>';
+  }
+}
+
+// extraction-status banner: PARTIAL means "review manually what is missing",
+// FAILED means "no data — the document itself is still here"
+function extractBanner(res) {
+  const st = res.extract_status;
+  if (st === 'failed') {
+    const err = (res.extract_error || {}).exception || '';
+    return '<div class="badbox">✕ <b>Extraction failed</b> — '
+      + esc(err) + '<br><span class="muted">field yang gagal itu <b>ekstraksinya</b>, '
+      + 'bukan dokumennya: PDF tersimpan dan tetap bisa dibuka di sebelah kanan.</span></div>';
+  }
+  if (st === 'partial') {
+    const missing = (res.extract_error || {}).reason || 'incomplete extraction';
+    return '<div class="badbox">⚠ <b>Partial extraction</b> — ' + esc(missing)
+      + '. Kosongkan/isi manual field yang tidak kebaca sebelum submit.</div>';
+  }
+  return '';
+}
+
+function markActive() {
+  document.querySelectorAll('tr[id^="pr"]').forEach(tr =>
+    tr.classList.toggle('active', tr.id === 'pr' + currentPrId));
+}
+
+async function showDetail(rid) {
+  const pr = await api('/prs/' + rid);
+  currentDraft = null;
+  currentPrId = rid;
+  markActive();
+  const e = pr.extract || {};
+  const st = pr.extract_status || 'extracted';
+  let html = '';
+  if (st === 'failed') {
+    const err = pr.extract_error || {};
+    html += '<div class="badbox">✕ <b>Extraction failed</b> — ' + esc(err.exception || 'unknown') +
+      '<br><span class="muted">PDF aslinya tersimpan dan tampil di sebelah kanan — '
+      + 'ekstraksinya yang gagal, bukan dokumennya. Perbaiki file dan upload ulang, '
+      + 'atau isi request manual di bawah.</span></div>';
+  } else if (st === 'partial') {
+    html += '<div class="badbox">⚠ <b>Partial extraction</b> — ' +
+      esc((pr.extract_error || {}).reason || 'incomplete extraction') +
+      '. Field yang kosong harus diisi manual sebelum submit.</div>';
+  }
+  html += '<div class="detail-grid">' +
+    '<div><span class="muted">Title</span><br><input id="dT" value="' + esc(pr.title) + '"></div>' +
+    '<div><span class="muted">Vendor</span><br><input id="dV" value="' + esc(pr.vendor_name || '') + '"></div>' +
+    '<div><span class="muted">Needed by</span><br><input id="dN" value="' + (pr.needed_by || '') + '"></div>' +
+    '<div><span class="muted">Value</span><br><b>' + esc(money(pr.total_val, pr.currency)) + '</b></div>' +
+    '</div>';
+  html += '<h2 style="margin-top:14px">Extracted header fields</h2>' +
+    extractSummary(e);
+  const cor = pr.corrections;
+  if (cor && Object.keys(cor).length) {
+    html += '<div class="okbox" style="margin-top:10px">✎ Corrected from the raw extraction: <b>' +
+      Object.keys(cor).map(esc).join(', ') +
+      '</b><br><span class="muted">the raw extraction itself is immutable — this diff is kept as eval data</span></div>';
+  }
+  html += '<p class="muted" style="margin-top:10px">Status: <span class="status ' +
+    pr.status + '">' + pr.status.replace('_', ' ') + '</span>' +
+    ' · extraction: <span class="status ' + st + '">' + st + '</span>' +
+    (pr.source_file ? ' · file: ' + esc(pr.source_file) : '') + '</p>';
+  $('detailCard').hidden = false;
+  $('detailBody').innerHTML = html;
+  $('detailActions').innerHTML = '';
+  if (pr.source_file) showPdf('/prs/' + encodeURIComponent(pr.id) + '/pdf');
+  if (pr.status === 'draft') {
+    if (st === 'failed') {
+      $('detailActions').innerHTML =
+        '<button onclick="saveDraft(' + pr.id + ')">Save edits</button>' +
+        '<span class="muted">Submit terkunci: total tidak terbaca — perbaiki '
+        + 'file lalu upload ulang sebagai PR baru.</span>';
+    } else {
+    $('detailActions').innerHTML =
+      '<button class="primary" onclick="submitPR(' + pr.id + ', this)">Submit &amp; route</button>' +
+      '<button onclick="saveDraft(' + pr.id + ')">Save edits</button>' +
+      '<span class="muted" id="thNote" style="margin-left:8px"></span>';
+    api('/config').then(cfg => {
+      const n = $('thNote');
+      if (n) n.textContent = 'auto-approve below ' + cfg.approval_threshold +
+                             ' (server config)';
+    }).catch(() => {});
+    }
+  } else if (pr.status === 'pending_approval' && me.role === 'buyer') {
+    $('detailActions').innerHTML =
+      "<button class='primary' onclick=decide(" + pr.id + ",'approve')>✓ Approve</button>" +
+      "<button onclick=decide(" + pr.id + ",'reject')>✕ Reject</button>";
+  } else if (pr.status === 'approved') {
+    $('detailActions').innerHTML =
+      '<div class="okbox">Order ' + (pr.order_id || '?') + ' created</div>';
+  } else if (pr.status === 'pending_approval') {
+    $('detailActions').innerHTML =
+      '<span class="muted">Waiting for a buyer decision.</span>';
+  } else if (pr.status === 'rejected') {
+    $('detailActions').innerHTML =
+      '<span class="muted">Rejected — upload a corrected quote to start over.</span>';
+  }
+}
+
+async function submitPR(rid) {
+  try {
+    await api('/prs/' + rid + '/submit', { method: 'POST' });
+    toast('Submitted');
+    showDetail(rid);
+    loadPrs();
+  } catch (e) { toast('❌ ' + e.message); }
+}
+
+async function saveDraft(rid) {
+  const patch = {
+    title: $('dT').value,
+    vendor_name: $('dV').value,
+    needed_by: $('dN').value
+  };
+  await api('/prs/' + rid, { method: 'PATCH', body: JSON.stringify(patch),
+    headers: { 'Content-Type': 'application/json' } });
+  toast('Draft saved');
+  showDetail(rid);
+  loadPrs();
+}
+
+async function decide(rid, act) {
+  try {
+    await api('/prs/' + rid + '/' + act, { method: 'POST' });
+    toast('PR ' + (act === 'approve' ? 'approved' : 'rejected'));
+    showDetail(rid);
+    loadPrs();
+  } catch (e) { toast('❌ ' + e.message); }
+}
+function updateSignin() {
+  $('signinBtn').disabled = !$('userSel').value;
+}
+
+async function loadUsers() {
+  try {
+    const users = await api('/users');
+    $('userSel').innerHTML =
+      '<option value="">CHOOSE YOUR USER</option>' +
+      users.map(u =>
+        '<option value="' + u.username + '">' + u.username +
+        ' (' + u.role + ')</option>').join('');
+    updateSignin();
+  } catch (e) { toast('❌ ' + e.message); }
+}
+
+(async () => {
+  try {
+    const u = await api('/me');
+    if (u && u.username) {
+      enter(u);          // valid session cookie — restore the app view
+      return;
+    }
+  } catch (e) { /* not logged in or server unreachable */ }
+  loadUsers();
+})();
+</script>
+</body>
+</html>
