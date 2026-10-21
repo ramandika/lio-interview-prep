@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lio Design Study</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,200;0,6..72,300;0,6..72,400;1,6..72,300&display=swap">
+
+<!--
+  Design plan — extracted from lio.ai via designlang (job 319a8e56, 2026-10-21)
+
+  Site character: stark editorial monochrome. 77.5% of area is white, 20.5%
+  black ink/borders; a pale-blue #bbddff appears only as the action surface
+  (with black text) and #0000ee as the classic link blue. Hairlines come from
+  #1c1c1c at 25% opacity; raised surfaces are #f0f0f0 / #f6f7f8.
+
+  Type: Reckless Standard Light (serif, weight 200) carries headings and large
+  body; STK Bureau Sans (grotesque) carries UI text at 12–14px. Both are
+  proprietary, so the app substitutes Newsreader (200–400 + opsz axis) for the
+  serif and keeps Inter for UI.
+
+  Shape: control radius r0 = 2px (inputs radius 0), pills at 40–50px for the
+  marketing CTAs, shadow sh1 = rgba(0,0,0,.12) 0 3px 5px used sparingly — the
+  app leans on 1px black frames instead of elevation.
+
+  Dark: the site inverts onto #010203 / #1c1c1c with white text.
+-->
+<style>
+  :root { color-scheme: light dark; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Inter", system-ui, sans-serif; background: #fff;
+         color: #000; padding: 40px 0 80px; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 20px; }
+  h1 { font-family: "Newsreader", Georgia, serif; font-weight: 200;
+       font-size: 52px; line-height: 1.1; letter-spacing: -0.01em; margin: 20px 0 8px; }
+  h1 em { font-style: italic; }
+  .lead { color: #767676; font-size: 14px; line-height: 1.6; max-width: 64ch; }
+  section { margin-top: 48px; }
+  h2 { font-size: 11px; text-transform: uppercase; letter-spacing: .14em;
+       font-weight: 600; border-bottom: 1px solid #000; padding-bottom: 8px; }
+  .hairline { color: rgba(0,0,0,.25); font-size: 12px; margin-top: 6px; }
+
+  /* palette */
+  .sw { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; margin-top: 16px; }
+  .chip { border: 1px solid #000; padding-bottom: 10px; }
+  .chip .swatch { height: 64px; border-bottom: 1px solid #000; }
+  .chip .cap { font-size: 11px; line-height: 1.5; padding: 8px 10px 0; }
+  .chip .cap b { display: block; font-size: 12px; }
+
+  /* type ramp */
+  .ramp div { border-bottom: 1px solid rgba(0,0,0,.15); padding: 12px 0; }
+  .serif { font-family: "Newsreader", Georgia, serif; }
+  .s64 { font-size: 64px; font-weight: 200; line-height: 70px; }
+  .s36 { font-size: 36px; font-weight: 200; line-height: 40px; }
+  .s22 { font-size: 22px; font-weight: 300; line-height: 24px; letter-spacing: -.5px; }
+  .s18 { font-size: 18px; font-weight: 300; }
+  .s14 { font-size: 14px; font-weight: 300; letter-spacing: -.3px; }
+  .s12 { font-size: 12px; }
+
+  /* controls */
+  .controls { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 16px; }
+  button { font: 400 12px/1 "Inter", system-ui, sans-serif; cursor: pointer;
+           border: 1px solid transparent; background: #f6f7f8; color: #000;
+           padding: 8px 18px; border-radius: 999px; }
+  button.primary { background: #bbddff; border-color: #000; }
+  button.dark { background: #000; color: #fff; }
+  button:hover:not(:disabled) { background: #ececec; }
+  button.primary:hover:not(:disabled) { background: #a7c4e0; }
+  button.dark:hover:not(:disabled) { background: #2b2b2b; }
+  input { font: 300 14px/1.4 "Inter", system-ui, sans-serif; width: 240px;
+          border: 0; border-bottom: 1px solid #767676; padding: 4px 2px; border-radius: 0; }
+  input:focus { outline: none; border-bottom-color: #000; }
+  .pill { display: inline-block; border: 1px solid rgba(0,0,0,.25); border-radius: 999px;
+          padding: 4px 10px; font-size: 11px; font-weight: 500; }
+  table { border-collapse: collapse; width: 100%; font-size: 12px; margin-top: 16px; }
+  th { text-transform: uppercase; letter-spacing: .08em; font-size: 10px;
+       color: #767676; text-align: left; padding: 6px 8px; border-bottom: 1px solid #000; }
+  td { padding: 6px 8px; border-bottom: 1px solid rgba(0,0,0,.18); }
+  .frame { border: 1px solid #000; border-radius: 2px; padding: 16px; margin-top: 16px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Lio <em>design study</em></h1>
+  <p class="lead">Tokens extracted from lio.ai live with designlang (job 319a8e56).
+     Reference sheet for the PR-tool restyle; the two app files
+     (app.html / index.html) consume these values through their CSS variables.</p>
+
+  <section>
+    <h2>Palette</h2>
+    <div class="sw">
+      <div class="chip"><div class="swatch" style="background:#bbddff"></div>
+        <div class="cap"><b>#bbddff</b>primary action · black text on it</div></div>
+      <div class="chip"><div class="swatch" style="background:#0000ee"></div>
+        <div class="cap"><b>#0000ee</b>link blue (classic)</div></div>
+      <div class="chip"><div class="swatch" style="background:#000;outline:1px solid #000;outline-offset:-1px"></div>
+        <div class="cap"><b>#000000</b>ink · 20.5% of page area in borders/text</div></div>
+      <div class="chip"><div class="swatch" style="background:rgba(0,0,0,.25)"></div>
+        <div class="cap"><b>#1c1c1c @25%</b>hairline borders</div></div>
+      <div class="chip"><div class="swatch" style="background:#767676"></div>
+        <div class="cap"><b>#767676</b>muted text · input borders</div></div>
+      <div class="chip"><div class="swatch" style="background:#f0f0f0"></div>
+        <div class="cap"><b>#f0f0f0</b>raised surface · chips · pdf backdrop</div></div>
+      <div class="chip"><div class="swatch" style="background:#f6f7f8"></div>
+        <div class="cap"><b>#f6f7f8</b>secondary button fill</div></div>
+      <div class="chip"><div class="swatch" style="background:#010203"></div>
+        <div class="cap"><b>#010203</b>dark page</div></div>
+      <div class="chip"><div class="swatch" style="background:#1c1c1c"></div>
+        <div class="cap"><b>#1c1c1c</b>dark surface</div></div>
+    </div>
+    <p class="hairline">Ramps (designlang): primary hue 210 → 950 #12202d; neutral 950 = #1c1c1c.</p>
+  </section>
+
+  <section>
+    <h2>Type</h2>
+    <div class="ramp">
+      <div class="serif s64">Headings — Reckless Standard Light 64</div>
+      <div class="serif s36">h3 36 · weight 200</div>
+      <div class="serif s22">h5 22 · weight 300 · tracking −½px</div>
+      <div class="serif s18">h6 18 · weight 300 — serif touches for editorial voice</div>
+      <div class="s14">sm-3 14 · Bureau Sans (→ Inter) · inputs, buttons</div>
+      <div class="s12">sm-5 12 · base UI size — the app builds its dense tables on this</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Controls</h2>
+    <div class="controls">
+      <button class="primary">Primary — #bbddff, dark ring</button>
+      <button>Secondary — #f6f7f8 pill</button>
+      <button class="dark">Dark fill variant</button>
+      <input placeholder="input: no radius, #767676 underline">
+      <span class="pill">status pill</span>
+    </div>
+    <div class="frame">
+      <table>
+        <thead><tr><th>Title</th><th>Total</th><th>Confident</th></tr></thead>
+        <tbody>
+          <tr><td>Quote_1_Lio_Technologies</td><td>EUR 12 175</td><td>70%</td></tr>
+          <tr><td>QualityHosting</td><td>EUR 1 440</td><td>60%</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+</body>
+</html>
